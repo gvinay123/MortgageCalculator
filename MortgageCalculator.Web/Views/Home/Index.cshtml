@@ -1,0 +1,221 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>Mortgage Calculator</h1>
+    <p class="lead">
+        The Mortgage Calculator helps you:
+        <ul>
+            <li>Choose the right loan for you</li>
+            <li>The Interests and Repayment on your loan</li>
+        </ul>
+    </p>
+</div>
+
+
+<div class="row">
+    <div class="col-md-6">
+        <!-- Form Name -->
+        <legend>Active Mortgage List</legend>
+        <!-- Display table of active mortgages -->
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Interest Rate</th>
+                    <th>Start</th>
+                    <th>End</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>@item.MortgageType</td>
+                        <td>@item.InterestRate %</td>
+                        <td>@item.EffectiveStartDate.ToShortDateString()</td>
+                        <td>@item.EffectiveEndDate.ToShortDateString()</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <form class="form-horizontal" id="mortgageForm">
+            <fieldset>
+
+                <!-- Form Name -->
+                <legend>Calculator</legend>
+
+                <!-- Text input-->
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="textinput">Borrowed Amount <span class="text-danger"> *</span></label>
+                    <div class="col-md-8">
+                        <input id="txtAmount" name="txtAmount" type="number" placeholder="0.00" step="0.01"  min="1000" max="10000000" class="form-control input-md" required>
+                        <span class="help-block">Enter the amount</span>
+                    </div>
+                </div>
+
+
+                <!-- Loan Duration -->
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="txtLoanDuration">Loan Duration<span class="text-danger"> *</span></label>
+                    <div class="col-md-8">
+                        <input id="txtLoanDuration" name="txtLoanDuration" type="number" min="1" max="50" class="form-control input-md" required />
+                        <span class="help-block">Enter the loan duration(in years)</span>
+
+                    </div>
+                </div>
+                <!-- Mortgage Type (Autocomplete) -->
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="mortgageType">Mortgage Type<span class="text-danger"> *</span></label>
+                    <div class="col-md-8">
+                        <input id="mortgageType" name="mortgageType" class="form-control" placeholder="Type to search..." required />
+                    </div>
+                </div>
+
+                <!-- Mortgage Name -->
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="mortgageName">Mortgage Name<span class="text-danger"> *</span></label>
+                    <div class="col-md-8">
+                        <select id="mortgageName" name="mortgageName" class="form-control" required>
+                            <option value="">-- Select Mortgage --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Interest Rate -->
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="txtInterestRate">Interest Rate (%) <span class="text-danger"> *</span></label>
+                    <div class="col-md-8">
+                        <input id="txtInterestRate" name="txtInterestRate" class="form-control" required />
+                    </div>
+                </div>
+
+
+
+                <div class="form-group">
+                    <div class="col-md-4 col-md-offset-4">
+                        <button type="submit" id="btnCalculate" class="btn btn-primary">Calculate</button>
+                    </div>
+                </div>
+                <div class="form-group">
+
+                    <div id="resultBox" class="alert alert-info" style="display:none;">
+                        <p><strong>Monthly Repayment:</strong> <span id="monthlyPayment"></span></p>
+                        <p><strong>Total Repayment:</strong> <span id="totalRepayment"></span></p>
+                        <p><strong>Total Interest:</strong> <span id="totalInterest"></span></p>
+                    </div>
+
+                </div>
+
+            </fieldset>
+        </form>
+    </div>
+
+
+
+</div>
+
+
+
+@section Scripts {
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(function () {
+            // Enable autocomplete for mortgage type
+            var mortgageTypes = @Html.Raw(Json.Encode(((IEnumerable<SelectListItem>)ViewBag.MortgageTypes).Select(x => x.Text).ToList()));
+            $('#mortgageType').autocomplete({
+                source: mortgageTypes,
+                select: function (event, ui) {
+                    $('#mortgageType').val(ui.item.value);
+                    fetchMortgageNames(ui.item.value);
+                    return false;
+                }
+            });
+
+            // Fetch mortgages based on selected type
+            function fetchMortgageNames(type) {
+                $('#mortgageName').html('<option>Loading...</option>');
+                $.ajax({
+                    url: '@Url.Action("GetMortgagesByType")',
+                    type: 'GET',
+                    data: { mortgageType: type },
+                    success: function (data) {
+                        var $mortgageName = $('#mortgageName');
+                        $mortgageName.empty().append('<option value="">-- Select Mortgage --</option>');
+                        $.each(data, function (i, item) {
+                            $mortgageName.append('<option value="' + item.MortgageId + '">' + item.Name + '</option>');
+                        });
+                    },
+                    error: function () {
+                        alert("Error loading mortgages");
+                    }
+                });
+            }
+
+            // Fetch interest rate when mortgage name is selected
+            $('#mortgageName').change(function () {
+                var mortgageId = $(this).val();
+                var mortgageType = $('#mortgageType').val();
+                if (mortgageId && mortgageType) {
+                    $.ajax({
+                        url: '@Url.Action("GetInterestRateByNameAndType")',
+                        type: 'GET',
+                        data: { mortgageId: mortgageId, mortgageType: mortgageType },
+                        success: function (rate) {
+                            $('#txtInterestRate').val(rate);
+                        },
+                        error: function () {
+                            alert("Unable to fetch interest rate.");
+                        }
+                    });
+                }
+            });
+        });
+
+
+
+
+
+        function calculateMortgage() {
+
+            var data = {
+                LoanAmount: parseFloat($('#txtAmount').val()),
+                InterestRate: parseFloat($('#txtInterestRate').val()),
+                DurationYears: parseInt($('#txtLoanDuration').val())
+            };
+
+
+            $.ajax({
+                url: '@Url.Action("CalculateMortgage")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (result) {
+                    $('#monthlyPayment').text(result.MonthlyPayment + " per month");
+                    $('#totalRepayment').text(result.TotalRepayment);
+                    $('#totalInterest').text(result.TotalInterest);
+                    $('#resultBox').show();
+                },
+                error: function () {
+                    alert("Calculation failed.");
+                }
+            });
+        }
+        $('#mortgageForm').on('submit', function (e) {
+            e.preventDefault(); 
+            if (this.checkValidity()) {
+                calculateMortgage();
+            } else {
+                this.reportValidity(); 
+            }
+        });
+
+    </script>
+}
