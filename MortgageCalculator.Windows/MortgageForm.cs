@@ -126,10 +126,10 @@ namespace MortgageCalculator.Windows
 
         private void btnCalculate_Click(object sender, EventArgs e)
         {
-            MortgageCalculationRequest request = new MortgageCalculationRequest();
+            Mortgage request = new Mortgage();
             request.LoanAmount = Convert.ToDecimal(txtAmount.Value);
             request.InterestRate = Convert.ToDecimal(txtInterestRate.Value);
-            request.DurationYears =Convert.ToInt32(txtDuration.Value);
+            request.TermsInYears =Convert.ToInt32(txtDuration.Value);
 
             var calculatedResult = _service.CalculateMortgage(request);
             pnlCalculationResult.Visible  =true;

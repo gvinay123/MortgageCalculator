@@ -230,9 +230,19 @@
             // txtDuration
             // 
             this.txtDuration.Location = new System.Drawing.Point(244, 71);
+            this.txtDuration.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.txtDuration.Name = "txtDuration";
             this.txtDuration.Size = new System.Drawing.Size(245, 22);
             this.txtDuration.TabIndex = 6;
+            this.txtDuration.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // lblInterestRate
             // 

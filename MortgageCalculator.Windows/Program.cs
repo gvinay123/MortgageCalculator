@@ -21,14 +21,14 @@ namespace MortgageCalculator.Windows
 
             // Register interfaces and implementations
             services.AddSingleton<IMortgageService, MortgageService>();
-            services.AddTransient<frmActiveList>();
+            services.AddTransient<MothlyEMICalculatorForm>();
 
             // Build service provider
             var serviceProvider = services.BuildServiceProvider();
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(serviceProvider.GetRequiredService<frmActiveList>());
+            Application.Run(serviceProvider.GetRequiredService<MothlyEMICalculatorForm>());
         }
     }
 }

@@ -27,6 +27,18 @@ namespace MortgageCalculator.Web.Controllers
             return View(mortgages);
         }
 
+        public ActionResult MortgageCalculator()
+        {
+
+            var mortgages = _service.GetActiveMortgages();
+            var mortgageTypes = _service.GetMortgageTypes();
+            var repaymentTypes = _service.GetRepaymentTypes();
+            ViewBag.MortgageTypes = new SelectList(mortgageTypes);
+            ViewBag.RepaymentTypes = new SelectList(repaymentTypes);
+            return View(mortgages);
+        }
+
+
         //get mortgage values by its type
         public JsonResult GetMortgagesByType(string mortgageType)
         {
@@ -45,7 +57,7 @@ namespace MortgageCalculator.Web.Controllers
 
         //calculate the mortgage value
         [HttpPost]
-        public JsonResult CalculateMortgage(MortgageCalculationRequest request)
+        public JsonResult CalculateMortgage(Mortgage request)
         {
 
             var calculatedResult = _service.CalculateMortgage(request);
@@ -57,11 +69,26 @@ namespace MortgageCalculator.Web.Controllers
                 TotalRepayment = calculatedResult.TotalRepayment.ToString(),
                 TotalInterest = calculatedResult.TotalInterest.ToString()
             });
-
-
-
-
         }
+
+        //calculate the mortgage value
+        [HttpPost]
+        public string MonthWiseEMICalculator(Mortgage request)
+        {
+
+            var calculatedResult = _service.MonthWiseEMICalculator(request);
+            return calculatedResult.ToString();
+        }
+
+        //get the emi split by id
+        public JsonResult GetMonthlyEmiDetailsById(int mortgageId)
+        {
+            var monthlyemilist = _service.GetMonthlyEmiDetailsById(mortgageId);
+            return Json(monthlyemilist, JsonRequestBehavior.AllowGet);
+        }
+        
+
+
 
     }
 

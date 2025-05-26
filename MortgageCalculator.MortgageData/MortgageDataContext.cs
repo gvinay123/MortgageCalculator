@@ -13,7 +13,13 @@ namespace MortgageCalculator.MortgageData
         public MortgageDataContext()
             : base("name=MortgageDbConnection") { }
 
-        public DbSet<Mortgage> Mortgages { get; set; }
+        public DbSet<Mortgage> Mortgage { get; set; }
+        public DbSet<MonthlyEMIDetails> MonthlyEMIDetails { get; set; }
+
+
+
+
+
     }
 
 

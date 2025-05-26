@@ -1,0 +1,304 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>Mortgage Calculator</h1>
+    <p class="lead">
+        The Mortgage Calculator helps you:
+        <ul>
+            <li>Choose the right loan for you</li>
+            <li>The Interests and Repayment on your loan</li>
+        </ul>
+    </p>
+</div>
+
+
+<div class="row">
+    <div class="col-md-6">
+        <form class="form-horizontal" id="mortgageForm">
+            <fieldset>
+
+                <!-- Form Name -->
+                <legend>Calculator</legend>
+
+
+                <!-- Mortgage Name -->
+                <div class="form-group">
+                    <label class="col-md-6 control-label" for="mortgageName">Mortgage Name<span class="text-danger"> *</span></label>
+                    <div class="col-md-6">
+                        <input id="txtMortageName" name="txtMortageName" class="form-control" required />
+
+                    </div>
+                </div>
+
+                <!-- Text input-->
+                <div class="form-group">
+                    <label class="col-md-6 control-label" for="textinput">Borrowed Amount <span class="text-danger"> *</span></label>
+                    <div class="col-md-6">
+                        <input id="txtAmount" name="txtAmount" type="number" placeholder="0.00" step="0.01" min="1000" max="10000000" class="form-control input-md" required>
+                    </div>
+                </div>
+
+                <!-- Loan Duration -->
+                <div class="form-group">
+                    <label class="col-md-6 control-label" for="txtLoanDuration">Loan Duration(in years)<span class="text-danger"> *</span></label>
+                    <div class="col-md-6">
+                        <input id="txtLoanDuration" name="txtLoanDuration" type="number" min="1" max="50" class="form-control input-md" required />
+
+                    </div>
+                </div>
+                <!-- Mortgage Type (Autocomplete) -->
+                <div class="form-group">
+                    <label class="col-md-6 control-label" for="mortgageType">Mortgage Type<span class="text-danger"> *</span></label>
+                    <div class="col-md-6">
+                        <input id="mortgageType" name="mortgageType" class="form-control" placeholder="Type to search..." required />
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label class="col-md-6 control-label" for="repaymentType">Interest Repayment Type<span class="text-danger"> *</span></label>
+                    <div class="col-md-6">
+                        <input id="repaymentType" name="repaymentType" class="form-control" placeholder="Type to search..." required />
+                    </div>
+                </div>
+
+
+                <!-- Interest Rate -->
+                <div class="form-group">
+                    <label class="col-md-6 control-label" for="txtInterestRate">Interest Rate (%) <span class="text-danger"> *</span></label>
+                    <div class="col-md-6">
+                        <input id="txtInterestRate" name="txtInterestRate" placeholder="0.00" step="0.01" min="0" max="100" class="form-control" required />
+                    </div>
+                </div>
+
+
+
+                <div class="form-group">
+                    <div class="col-md-4 col-md-offset-4">
+                        <button type="submit" id="btnCalculate" class="btn btn-primary">Calculate</button>
+                    </div>
+                </div>
+
+
+            </fieldset>
+        </form>
+    </div>
+
+    <div class="col-md-6">
+        <!-- Form Name -->
+        <legend>Active Mortgage List</legend>
+        <!-- Display table of active mortgages -->
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Loan Amount</th>
+                    <th>Interest Rate</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Action</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>@item.MortgageType</td>
+                        <td>@item.LoanAmount</td>
+                        <td>@item.InterestRate %</td>
+                        <td>@item.EffectiveStartDate.ToShortDateString()</td>
+                        <td>@item.EffectiveEndDate.ToShortDateString()</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-info view-emi" data-id="@item.MortgageId" data-toggle="modal" data-target="#emiModal">
+                                View
+                            </button>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+
+
+</div>
+
+<div class="modal fade" id="emiModal" tabindex="-1" role="dialog" aria-labelledby="emiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Monthly EMI Breakdown</h5>
+                <button type="button" class="close close-modal-btn" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="emiTableContainer" style="max-height: 500px; overflow-y: auto;">
+                    <!-- Table will be built dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(function () {
+            // Enable autocomplete for mortgage type
+            var mortgageTypes = @Html.Raw(Json.Encode(((IEnumerable<SelectListItem>)ViewBag.MortgageTypes).Select(x => x.Text).ToList()));
+            $('#mortgageType').autocomplete({
+                source: mortgageTypes,
+                select: function (event, ui) {
+                    $('#mortgageType').val(ui.item.value);
+                    return false;
+                }
+            });
+
+
+
+             // Enable autocomplete for repayment type
+            var repaymentTypes = @Html.Raw(Json.Encode(((IEnumerable<SelectListItem>)ViewBag.RepaymentTypes).Select(x => x.Text).ToList()));
+            $('#repaymentType').autocomplete({
+                source: repaymentTypes,
+                select: function (event, ui) {
+                    $('#repaymentType').val(ui.item.value);
+                    return false;
+                }
+            });
+
+
+
+        });
+
+
+
+
+
+        function calculateMortgage() {
+
+            var data = {
+                LoanAmount: parseFloat($('#txtAmount').val()),
+                InterestRate: parseFloat($('#txtInterestRate').val()),
+                TermsInYears: parseInt($('#txtLoanDuration').val()),
+                Name: $('#txtMortageName').val(),
+                MortgageType: $('#mortgageType').val(),
+                InterestRepayment: $('#repaymentType').val()
+            };
+
+
+            $.ajax({
+                url: '@Url.Action("MonthWiseEMICalculator")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (result) {
+                    GetMonthlySplit(result);
+                },
+                error: function () {
+                    alert("Calculation failed.");
+                }
+            });
+        }
+        $('#mortgageForm').on('submit', function (e) {
+            e.preventDefault();
+            if (this.checkValidity()) {
+                calculateMortgage();
+            } else {
+                this.reportValidity();
+            }
+        });
+
+    </script>
+
+
+
+
+    <script>
+        $(document).ready(function () {
+            $('.view-emi').click(function () {
+                var mortgageId = $(this).data('id');
+                GetMonthlySplit(mortgageId);
+            });
+        });
+
+
+        function GetMonthlySplit(mortgageId) {
+
+            // Show modal with static backdrop and disabled ESC
+            $('#emiModal').modal({
+                backdrop: 'static',
+                keyboard: false,
+            });
+
+            $.ajax({
+                url: '@Url.Action("GetMonthlyEmiDetailsById")',
+                type: 'GET',
+                data: { mortgageId: mortgageId },
+                success: function (data) {
+                    // Dynamically create HTML table
+                    var tableHtml = `
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Month</th>
+                                    <th>Principal</th>
+                                    <th>Interest</th>
+                                    <th>Total Payment</th>
+                                    <th>Remaining Balance</th>
+                                    <th>Loan Paid (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    data.forEach(function (item) {
+                        tableHtml += `
+                            <tr>
+                                <td>${item.Year}</td>
+                                <td>${item.Month}</td>
+                                <td>${item.Principal}</td>
+                                <td>${item.Interest}</td>
+                                <td>${(item.Principal + item.Interest).toFixed(2) }</td>
+                                <td>${item.RemainingBalance.toFixed(2) }</td>
+                                <td>${item.LoanPaidPercentage.toFixed(2)}%</td>
+                            </tr>
+                        `;
+                    });
+
+                    tableHtml += `</tbody></table>`;
+
+                    $('#emiTableContainer').html(tableHtml);
+
+                    $('#emiModal').modal('show');
+                },
+                error: function () {
+                    $('#emiTableContainer').html('<div class="alert alert-danger">Failed to load EMI details.</div>');
+                    $('#emiModal').modal('show');
+                }
+            });
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+
+
+            // Reload page on close button click
+            $('.close-modal-btn').on('click', function () {
+                location.reload();
+            });
+        });
+    </script>
+
+}

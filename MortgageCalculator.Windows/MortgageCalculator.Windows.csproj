@@ -137,16 +137,34 @@
   <ItemGroup>
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="App_Start\UnityMvcActivator.cs" />
+    <Compile Include="MonthlyEmiSplitForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MonthlyEmiSplitForm.Designer.cs">
+      <DependentUpon>MonthlyEmiSplitForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MortgageForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MortgageForm.Designer.cs">
       <DependentUpon>MortgageForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MothlyEMICalculatorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MothlyEMICalculatorForm.Designer.cs">
+      <DependentUpon>MothlyEMICalculatorForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="MonthlyEmiSplitForm.resx">
+      <DependentUpon>MonthlyEmiSplitForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MortgageForm.resx">
       <DependentUpon>MortgageForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MothlyEMICalculatorForm.resx">
+      <DependentUpon>MothlyEMICalculatorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -158,7 +176,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="MortgageCalculator.Windows_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
